@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Smile, Sparkles, HeartHandshake, Phone, ArrowLeft, Calendar as CalendarIcon, CheckCircle2, Clock } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Calendar } from "@/components/ui/calendar";
 import { useGetAvailableSlots, useCreateAppointment } from "@workspace/api-client-react";
 import { format, addDays, startOfToday } from "date-fns";
