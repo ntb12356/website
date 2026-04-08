@@ -30,3 +30,63 @@ id = "gqli4baZQ04MUWQb_e8uI"
 uri = "file://artifacts/dental-website/public/dr-mitchell-portrait.png"
 type = "image"
 title = "Dr Mitchell portrait"
+
+[[generated]]
+id = "RA2y0xfsXq8U6o7j-mavd"
+uri = "file://artifacts/dental-website/public/before-whitening.png"
+type = "image"
+title = "Before teeth whitening closeup"
+
+[[generated]]
+id = "-etEzAWTvDQJ53e3fWSDR"
+uri = "file://artifacts/dental-website/public/after-whitening.png"
+type = "image"
+title = "After teeth whitening closeup"
+
+[[generated]]
+id = "Uf2w4LfkNv8Qv3TwKNtsV"
+uri = "file://artifacts/dental-website/public/before-invisalign.png"
+type = "image"
+title = "Before invisalign closeup"
+
+[[generated]]
+id = "oeBr8KQtErJ6ztBnPHQys"
+uri = "file://artifacts/dental-website/public/after-invisalign.png"
+type = "image"
+title = "After invisalign closeup"
+
+[[generated]]
+id = "H94Y-3vVplusak_-q9aIF"
+uri = "file://artifacts/dental-website/public/before-implants.png"
+type = "image"
+title = "Before dental implants closeup"
+
+[[generated]]
+id = "VKszkzTdHlR9lo8j4EA3r"
+uri = "file://artifacts/dental-website/public/after-implants.png"
+type = "image"
+title = "After dental implants closeup"
+
+[[generated]]
+id = "gty1bBgMF1UQV9Bc-YW8a"
+uri = "file://artifacts/dental-website/public/clinic-reception.png"
+type = "image"
+title = "Modern clinic reception area"
+
+[[generated]]
+id = "hMY4X3A31qolGdJlVTqAl"
+uri = "file://artifacts/dental-website/public/clinic-treatment.png"
+type = "image"
+title = "Modern treatment room"
+
+[[generated]]
+id = "stvDzLe3Wj9X3Mdl20q1J"
+uri = "file://artifacts/dental-website/public/clinic-waiting.png"
+type = "image"
+title = "Calming clinic waiting area"
+
+[[generated]]
+id = "0j2I0G5_h6WTsN3v14tBZ"
+uri = "file://artifacts/dental-website/public/clinic-doctor-patient.png"
+type = "image"
+title = "Doctor talking with patient"
