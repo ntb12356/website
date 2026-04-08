@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: appointments
+    description: Appointment booking operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /appointments/available-slots:
+    get:
+      operationId: getAvailableSlots
+      tags: [appointments]
+      summary: Get available time slots
+      description: Returns available appointment time slots for a given date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Date in YYYY-MM-DD format
+        - name: service
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Available slots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailableSlotsResponse"
+
+  /appointments:
+    post:
+      operationId: createAppointment
+      tags: [appointments]
+      summary: Book an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAppointmentBody"
+      responses:
+        "201":
+          description: Appointment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Invalid request or slot unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Time slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /appointments/{id}:
+    get:
+      operationId: getAppointment
+      tags: [appointments]
+      summary: Get appointment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Appointment found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "404":
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +119,100 @@ components:
       required:
         - status
 
+    AvailableSlotsResponse:
+      type: object
+      properties:
+        date:
+          type: string
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeSlot"
+      required:
+        - date
+        - slots
+
+    TimeSlot:
+      type: object
+      properties:
+        time:
+          type: string
+          description: Time in HH:MM format (24h)
+        label:
+          type: string
+          description: Human-readable label e.g. "9:00 AM"
+        available:
+          type: boolean
+      required:
+        - time
+        - label
+        - available
+
+    CreateAppointmentBody:
+      type: object
+      properties:
+        patientName:
+          type: string
+        patientEmail:
+          type: string
+        patientPhone:
+          type: string
+        service:
+          type: string
+        date:
+          type: string
+          description: Date in YYYY-MM-DD format
+        timeSlot:
+          type: string
+          description: Time in HH:MM format (24h)
+        notes:
+          type: string
+      required:
+        - patientName
+        - patientEmail
+        - patientPhone
+        - service
+        - date
+        - timeSlot
+
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        patientName:
+          type: string
+        patientEmail:
+          type: string
+        patientPhone:
+          type: string
+        service:
+          type: string
+        date:
+          type: string
+        timeSlot:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - patientName
+        - patientEmail
+        - patientPhone
+        - service
+        - date
+        - timeSlot
+        - status
+        - createdAt
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

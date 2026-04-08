@@ -18,3 +18,15 @@ id = "EolwI-DEP363Wf6Q5kEXL"
 uri = "file://artifacts/dental-website/public/clinic-room.png"
 type = "image"
 title = "Pristine dental treatment room"
+
+[[generated]]
+id = "e6-dcNfJHs66MRm9Jlbu1"
+uri = "file://artifacts/dental-website/public/services-hero.png"
+type = "image"
+title = "Modern dental clinic interior"
+
+[[generated]]
+id = "gqli4baZQ04MUWQb_e8uI"
+uri = "file://artifacts/dental-website/public/dr-mitchell-portrait.png"
+type = "image"
+title = "Dr Mitchell portrait"

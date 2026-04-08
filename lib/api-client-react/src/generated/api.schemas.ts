@@ -8,3 +8,53 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface TimeSlot {
+  /** Time in HH:MM format (24h) */
+  time: string;
+  /** Human-readable label e.g. "9:00 AM" */
+  label: string;
+  available: boolean;
+}
+
+export interface AvailableSlotsResponse {
+  date: string;
+  slots: TimeSlot[];
+}
+
+export interface CreateAppointmentBody {
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string;
+  service: string;
+  /** Date in YYYY-MM-DD format */
+  date: string;
+  /** Time in HH:MM format (24h) */
+  timeSlot: string;
+  notes?: string;
+}
+
+export interface Appointment {
+  id: number;
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string;
+  service: string;
+  date: string;
+  timeSlot: string;
+  notes?: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type GetAvailableSlotsParams = {
+  /**
+   * Date in YYYY-MM-DD format
+   */
+  date: string;
+  service?: string;
+};

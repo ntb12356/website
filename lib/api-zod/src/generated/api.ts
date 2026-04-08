@@ -14,3 +14,56 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns available appointment time slots for a given date
+ * @summary Get available time slots
+ */
+export const GetAvailableSlotsQueryParams = zod.object({
+  date: zod.coerce.string(),
+  service: zod.coerce.string().optional(),
+});
+
+export const GetAvailableSlotsResponse = zod.object({
+  date: zod.string(),
+  slots: zod.array(
+    zod.object({
+      time: zod.string().describe("Time in HH:MM format (24h)"),
+      label: zod.string().describe('Human-readable label e.g. \"9:00 AM\"'),
+      available: zod.boolean(),
+    }),
+  ),
+});
+
+/**
+ * @summary Book an appointment
+ */
+export const CreateAppointmentBody = zod.object({
+  patientName: zod.string(),
+  patientEmail: zod.string(),
+  patientPhone: zod.string(),
+  service: zod.string(),
+  date: zod.string().describe("Date in YYYY-MM-DD format"),
+  timeSlot: zod.string().describe("Time in HH:MM format (24h)"),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Get appointment by ID
+ */
+export const GetAppointmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetAppointmentResponse = zod.object({
+  id: zod.number(),
+  patientName: zod.string(),
+  patientEmail: zod.string(),
+  patientPhone: zod.string(),
+  service: zod.string(),
+  date: zod.string(),
+  timeSlot: zod.string(),
+  notes: zod.string().optional(),
+  status: zod.string(),
+  createdAt: zod.string(),
+});

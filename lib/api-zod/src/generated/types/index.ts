@@ -6,4 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./appointment";
+export * from "./availableSlotsResponse";
+export * from "./createAppointmentBody";
+export * from "./errorResponse";
+export * from "./getAvailableSlotsParams";
 export * from "./healthStatus";
+export * from "./timeSlot";
