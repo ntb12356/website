@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "VxAKHWtc5oIoIrKx1Axwk"
+uri = "file://artifacts/dental-website/public/hero.png"
+type = "image"
+title = "Bright modern dental clinic reception"
+
+[[generated]]
+id = "msNzVBRNwP5q3MYpHA_OL"
+uri = "file://artifacts/dental-website/public/doctor.png"
+type = "image"
+title = "Female dentist portrait"
+
+[[generated]]
+id = "EolwI-DEP363Wf6Q5kEXL"
+uri = "file://artifacts/dental-website/public/clinic-room.png"
+type = "image"
+title = "Pristine dental treatment room"

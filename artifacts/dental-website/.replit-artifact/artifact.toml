@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Dental Practice Website"
+version = "1.0.0"
+id = "artifacts/dental-website"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23742
+
+[services.development]
+run = "pnpm --filter @workspace/dental-website run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dental-website", "run", "build" ]
+publicDir = "artifacts/dental-website/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23742"
+BASE_PATH = "/"
