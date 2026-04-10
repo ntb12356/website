@@ -16,7 +16,10 @@ const ContactInquiryBody = z.object({
 router.post("/contact", async (req, res): Promise<void> => {
   const parsed = ContactInquiryBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    const message = parsed.error.issues
+      .map((issue) => issue.message)
+      .join("; ");
+    res.status(400).json({ error: message });
     return;
   }
 

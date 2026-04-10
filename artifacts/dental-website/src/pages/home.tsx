@@ -113,11 +113,11 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `${firstName} ${lastName}`.trim(),
+          name: `${firstName} ${lastName}`.trim() || firstName || lastName,
           email,
           phone,
           service,
-          message: message || "No additional notes.",
+          message: message || undefined,
         }),
       });
       if (!response.ok) throw new Error("Server error");

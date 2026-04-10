@@ -37,7 +37,7 @@ const formSchema = z.object({
     .string()
     .min(10, "Phone number must be at least 10 digits")
     .refine(
-      (val) => /^[\+\d][\d\s\-().]{8,}$/.test(val),
+      (val) => /^\+?[\d\s\-().]{10,}$/.test(val),
       "Please enter a valid phone number",
     ),
   notes: z.string().optional(),
