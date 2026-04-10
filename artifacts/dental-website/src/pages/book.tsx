@@ -7,6 +7,7 @@ import { ShieldCheck, Smile, Sparkles, HeartHandshake, Phone, ArrowLeft, Calenda
 import { useLocation, Link } from "wouter";
 import { Calendar } from "@/components/ui/calendar";
 import { useGetAvailableSlots, useCreateAppointment } from "@workspace/api-client-react";
+import type { Appointment } from "@workspace/api-client-react";
 import { format, addDays, startOfToday } from "date-fns";
 import { useForm as useRHForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,20 +15,31 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DENTAL_SERVICES } from "@/lib/clinic-constants";
 
-const SERVICES = [
-  { id: "General Dentistry", title: "General Dentistry", icon: Smile },
-  { id: "Teeth Whitening", title: "Teeth Whitening", icon: Sparkles },
-  { id: "Dental Implants", title: "Dental Implants", icon: ShieldCheck },
-  { id: "Invisalign", title: "Invisalign", icon: HeartHandshake },
-  { id: "Pediatric Dentistry", title: "Pediatric Dentistry", icon: Smile },
-  { id: "Emergency Care", title: "Emergency Care", icon: Phone },
-];
+const SERVICES = DENTAL_SERVICES.map((id) => {
+  const icons: Record<string, typeof Smile> = {
+    "General Dentistry": Smile,
+    "Teeth Whitening": Sparkles,
+    "Dental Implants": ShieldCheck,
+    "Invisalign": HeartHandshake,
+    "Pediatric Dentistry": Smile,
+    "Emergency Care": Phone,
+  };
+  return { id, title: id, icon: icons[id] ?? Smile };
+});
 
 const formSchema = z.object({
   patientName: z.string().min(2, "Name is required"),
   patientEmail: z.string().email("Valid email is required"),
-  patientPhone: z.string().min(10, "Valid phone number is required"),
+  patientPhone: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits")
+    .refine(
+      (val) => /^[\+\d][\d\s\-().]{8,}$/.test(val),
+      "Please enter a valid phone number",
+    ),
   notes: z.string().optional(),
 });
 
@@ -36,13 +48,14 @@ type Step = 1 | 2 | 3 | 4;
 export default function Book() {
   const [location] = useLocation();
   const urlParams = new URLSearchParams(location.split('?')[1]);
-  const initialService = urlParams.get("service") || "";
+  const rawService = urlParams.get("service") || "";
+  const initialService = (DENTAL_SERVICES as readonly string[]).includes(rawService) ? rawService : "";
 
   const [step, setStep] = useState<Step>(1);
   const [selectedService, setSelectedService] = useState<string>(initialService);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
-  const [bookingResult, setBookingResult] = useState<any>(null);
+  const [bookingResult, setBookingResult] = useState<Appointment | null>(null);
   
   const today = startOfToday();
   const maxDate = addDays(today, 60);
@@ -184,7 +197,7 @@ export default function Book() {
                         mode="single"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
-                        disabled={(date) => date < today || date > maxDate || date.getDay() === 0}
+                        disabled={(date) => date < today || date > maxDate || date.getUTCDay() === 0}
                         className="rounded-md"
                       />
                     </div>
@@ -199,8 +212,10 @@ export default function Book() {
                         Please select a date first
                       </div>
                     ) : isLoadingSlots ? (
-                      <div className="h-48 flex items-center justify-center text-muted-foreground">
-                        Loading available times...
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="h-10 rounded-lg" />
+                        ))}
                       </div>
                     ) : slotsData?.slots?.length ? (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -340,7 +355,7 @@ export default function Book() {
                 </div>
                 <h2 className="text-3xl font-serif font-bold mb-4">You're all set!</h2>
                 <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
-                  We've successfully booked your appointment. A confirmation email has been sent to {bookingResult?.patientEmail}.
+                  Your appointment is confirmed. We look forward to seeing you — please save these details for your records.
                 </p>
                 
                 <div className="bg-secondary/50 rounded-2xl p-6 mb-8 w-full max-w-md text-left">

@@ -23,11 +23,19 @@ import {
   Stethoscope,
   Syringe,
   Baby,
-  StarHalf,
   ChevronRight,
-  Droplets
 } from "lucide-react";
 import { FormEvent, useState } from "react";
+import {
+  CLINIC_PHONE,
+  CLINIC_PHONE_TEL,
+  CLINIC_EMAIL,
+  CLINIC_ADDRESS_STREET,
+  CLINIC_ADDRESS_CITY,
+  CLINIC_LOCATION_LABEL,
+  CLINIC_HOURS_WEEKDAY_LONG,
+  CLINIC_HOURS_SATURDAY_LONG,
+} from "@/lib/clinic-constants";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -45,26 +53,37 @@ const staggerContainer = {
 };
 
 const BeforeAfterImage = ({ before, after, label }: { before: string, after: string, label: string }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   
   return (
     <div 
-      className="relative aspect-square rounded-3xl overflow-hidden cursor-ew-resize group shadow-lg"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="relative aspect-square rounded-3xl overflow-hidden cursor-ew-resize shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      onMouseEnter={() => setRevealed(true)}
+      onMouseLeave={() => setRevealed(false)}
+      onFocus={() => setRevealed(true)}
+      onBlur={() => setRevealed(false)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          setRevealed((prev) => !prev);
+          e.preventDefault();
+        }
+      }}
+      tabIndex={0}
+      role="img"
+      aria-label={`Before and after comparison for ${label}. Press Enter or Space to toggle.`}
     >
       <img src={before} alt={`Before ${label}`} className="absolute inset-0 w-full h-full object-cover" />
-      <div 
-        className="absolute inset-0 w-full h-full overflow-hidden transition-all duration-500 ease-in-out z-10"
-        style={{ width: isHovered ? '100%' : '50%' }}
-      >
-        <img src={after} alt={`After ${label}`} className="absolute inset-0 w-[200%] h-full object-cover max-w-none" style={{ width: 'calc(100% * (1 / (50 / 100)))', transform: isHovered ? 'translateX(0)' : 'translateX(0)' }} />
-      </div>
+      <img
+        src={after}
+        alt={`After ${label}`}
+        className="absolute inset-0 w-full h-full object-cover z-10 transition-all duration-500 ease-in-out"
+        style={{ clipPath: revealed ? 'inset(0 0% 0 0)' : 'inset(0 50% 0 0)' }}
+      />
       <div className="absolute top-4 left-4 z-20 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full">BEFORE</div>
-      <div className="absolute top-4 right-4 z-20 bg-primary/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full transition-opacity duration-300" style={{ opacity: isHovered ? 1 : 0 }}>AFTER</div>
+      <div className="absolute top-4 right-4 z-20 bg-primary/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full transition-opacity duration-300" style={{ opacity: revealed ? 1 : 0 }}>AFTER</div>
       
-      {!isHovered && (
-        <div className="absolute inset-y-0 left-1/2 w-1 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] z-20 -translate-x-1/2 pointer-events-none flex items-center justify-center">
+      {!revealed && (
+        <div className="absolute inset-y-0 left-1/2 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] z-20 -translate-x-1/2 pointer-events-none flex items-center justify-center">
           <div className="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-primary">
             <ChevronRight className="w-5 h-5" />
           </div>
@@ -76,13 +95,46 @@ const BeforeAfterImage = ({ before, after, label }: { before: string, after: str
 
 export default function Home() {
   const { toast } = useToast();
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
-  const handleBookingSubmit = (e: FormEvent) => {
+  const handleBookingSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Request Received",
-      description: "We will contact you shortly to confirm your appointment time.",
-    });
+    setIsSubmittingContact(true);
+    const formData = new FormData(e.currentTarget);
+    const firstName = (formData.get("firstName") as string | null ?? "").trim();
+    const lastName = (formData.get("lastName") as string | null ?? "").trim();
+    const email = (formData.get("email") as string | null ?? "").trim();
+    const phone = (formData.get("phone") as string | null ?? "").trim();
+    const service = (formData.get("service") as string | null ?? "").trim();
+    const message = (formData.get("message") as string | null ?? "").trim();
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`.trim(),
+          email,
+          phone,
+          service,
+          message: message || "No additional notes.",
+        }),
+      });
+      if (!response.ok) throw new Error("Server error");
+      toast({
+        title: "Request Received!",
+        description: "We will contact you shortly to confirm your appointment time.",
+      });
+      (e.target as HTMLFormElement).reset();
+    } catch {
+      toast({
+        title: "Something went wrong",
+        description: `Please try again or call us directly at ${CLINIC_PHONE}.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingContact(false);
+    }
   };
 
   return (
@@ -102,7 +154,7 @@ export default function Home() {
             >
               <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6 border border-primary/20 shadow-sm">
                 <MapPin className="w-4 h-4" />
-                <span>Downtown Chicago | 1200 N Michigan Ave</span>
+                <span>{CLINIC_LOCATION_LABEL} | {CLINIC_ADDRESS_STREET}</span>
               </motion.div>
               <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-serif font-bold text-foreground leading-tight mb-6 tracking-tight">
                 Anxiety-free dentistry. <br/><span className="text-primary italic font-light">Book today, smile today.</span>
@@ -118,7 +170,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="rounded-full text-base h-14 px-8 border-2" asChild>
-                  <a href="tel:+13125550190">
+                  <a href={`tel:${CLINIC_PHONE_TEL}`}>
                     <Phone className="mr-2 w-5 h-5" />
                     Call Now
                   </a>
@@ -199,9 +251,9 @@ export default function Home() {
             Don't wait if you're experiencing severe toothache, a broken tooth, or a lost filling. We reserve specific times every day for emergency patients.
           </p>
           <Button size="lg" className="rounded-full h-16 px-10 text-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg shadow-destructive/30 animate-pulse transition-all hover:scale-105" asChild>
-            <a href="tel:+13125550190">
+            <a href={`tel:${CLINIC_PHONE_TEL}`}>
               <Phone className="mr-3 w-6 h-6" />
-              Call (312) 555-0190 Now
+              Call {CLINIC_PHONE} Now
             </a>
           </Button>
         </div>
@@ -494,7 +546,7 @@ export default function Home() {
               { q: "What if I have severe dental anxiety?", a: "You are our ideal patient. Let us know when you book. We offer a calm environment, noise-canceling headphones, comfort items, and take everything at your pace. We promise to never judge the state of your teeth." },
               { q: "How much does it cost?", a: "We believe in 100% transparency. Before any treatment begins, we will provide a detailed breakdown of costs and what your insurance will cover. No surprise bills, ever." },
               { q: "Do you offer payment plans?", a: "Yes! We offer 0% financing options and accept CareCredit. We believe everyone deserves excellent dental care, and we'll work with you to find a payment plan that fits your budget." },
-              { q: "What's your emergency process?", a: "If you have a dental emergency, call us immediately at (312) 555-0190. We reserve specific slots every day for emergencies and will do everything possible to see you the same day." },
+              { q: "What's your emergency process?", a: `If you have a dental emergency, call us immediately at ${CLINIC_PHONE}. We reserve specific slots every day for emergencies and will do everything possible to see you the same day.` },
               { q: "How long does a cleaning take?", a: "A standard checkup and cleaning usually takes about 45 to 60 minutes. If it's your first time with us, expect about 60-75 minutes so we can take comprehensive X-rays and Dr. Mitchell can do a full exam." },
               { q: "Do you see children?", a: "Yes, we love seeing kids! We offer pediatric dentistry for children ages 3 and up, making sure their first experiences with the dentist are fun and positive." }
             ].map((faq, i) => (
@@ -531,7 +583,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-1">Call Us</h4>
-                    <a href="tel:+13125550190" className="text-muted-foreground text-lg hover:text-primary transition-colors">(312) 555-0190</a>
+                    <a href={`tel:${CLINIC_PHONE_TEL}`} className="text-muted-foreground text-lg hover:text-primary transition-colors">{CLINIC_PHONE}</a>
                   </div>
                 </div>
                 
@@ -541,7 +593,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-1">Location</h4>
-                    <p className="text-muted-foreground">1200 N Michigan Ave, Suite 400<br/>Downtown Chicago, IL 60611</p>
+                    <p className="text-muted-foreground">{CLINIC_ADDRESS_STREET}<br/>{CLINIC_ADDRESS_CITY}</p>
                   </div>
                 </div>
                 
@@ -551,7 +603,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-1">Hours</h4>
-                    <p className="text-muted-foreground">Monday - Friday: 8:00 AM - 6:00 PM<br/>Saturday: 9:00 AM - 3:00 PM</p>
+                    <p className="text-muted-foreground">{CLINIC_HOURS_WEEKDAY_LONG}<br/>{CLINIC_HOURS_SATURDAY_LONG}</p>
                   </div>
                 </div>
               </div>
@@ -603,24 +655,24 @@ export default function Home() {
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
-                        <Input id="firstName" placeholder="John" className="h-12 bg-secondary/30" required />
+                        <Input id="firstName" name="firstName" placeholder="John" className="h-12 bg-secondary/30" required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name <span className="text-destructive">*</span></Label>
-                        <Input id="lastName" placeholder="Doe" className="h-12 bg-secondary/30" required />
+                        <Input id="lastName" name="lastName" placeholder="Doe" className="h-12 bg-secondary/30" required />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
-                      <Input id="email" type="email" placeholder="john@example.com" className="h-12 bg-secondary/30" required />
+                      <Input id="email" name="email" type="email" placeholder="john@example.com" className="h-12 bg-secondary/30" required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
-                      <Input id="phone" type="tel" placeholder="(312) 555-0000" className="h-12 bg-secondary/30" required />
+                      <Input id="phone" name="phone" type="tel" placeholder="(312) 555-0000" className="h-12 bg-secondary/30" required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="service">Service Needed</Label>
-                      <select id="service" className="flex h-12 w-full rounded-md border border-input bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors hover:border-primary/50">
+                      <select id="service" name="service" className="flex h-12 w-full rounded-md border border-input bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors hover:border-primary/50">
                         <option>General Checkup & Cleaning</option>
                         <option>Teeth Whitening</option>
                         <option>Invisalign Consultation</option>
@@ -631,10 +683,10 @@ export default function Home() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="message">Message (Optional)</Label>
-                      <Textarea id="message" placeholder="Any specific concerns or dental anxiety? Let us know." className="min-h-[120px] bg-secondary/30 resize-none" />
+                      <Textarea id="message" name="message" placeholder="Any specific concerns or dental anxiety? Let us know." className="min-h-[120px] bg-secondary/30 resize-none" />
                     </div>
-                    <Button type="submit" size="lg" className="w-full rounded-xl h-14 text-lg shadow-lg hover:shadow-xl transition-all">
-                      Request Appointment
+                    <Button type="submit" size="lg" className="w-full rounded-xl h-14 text-lg shadow-lg hover:shadow-xl transition-all" disabled={isSubmittingContact}>
+                      {isSubmittingContact ? "Sending..." : "Request Appointment"}
                     </Button>
                     <p className="text-xs text-center text-muted-foreground mt-4 flex items-center justify-center gap-1">
                       <ShieldCheck className="w-3 h-3" /> Secure and confidential
@@ -677,9 +729,9 @@ export default function Home() {
             <div>
               <h4 className="font-serif font-bold text-xl mb-6 text-primary">Contact</h4>
               <ul className="space-y-3 text-background/80">
-                <li><a href="tel:+13125550190" className="hover:text-primary transition-colors flex items-center gap-2"><Phone className="w-4 h-4"/> (312) 555-0190</a></li>
-                <li><a href="mailto:hello@mitchelldental.com" className="hover:text-primary transition-colors">hello@mitchelldental.com</a></li>
-                <li className="pt-2">1200 N Michigan Ave, Suite 400<br/>Chicago, IL 60611</li>
+                <li><a href={`tel:${CLINIC_PHONE_TEL}`} className="hover:text-primary transition-colors flex items-center gap-2"><Phone className="w-4 h-4"/> {CLINIC_PHONE}</a></li>
+                <li><a href={`mailto:${CLINIC_EMAIL}`} className="hover:text-primary transition-colors">{CLINIC_EMAIL}</a></li>
+                <li className="pt-2">{CLINIC_ADDRESS_STREET}<br/>{CLINIC_ADDRESS_CITY}</li>
               </ul>
             </div>
           </div>
@@ -699,7 +751,7 @@ export default function Home() {
           <Link href="/book">Book Now</Link>
         </Button>
         <Button variant="outline" className="flex-1 rounded-full h-12 border-2 text-foreground" asChild>
-          <a href="tel:+13125550190">
+          <a href={`tel:${CLINIC_PHONE_TEL}`}>
             <Phone className="w-4 h-4 mr-2" />
             Call Us
           </a>

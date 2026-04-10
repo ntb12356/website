@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Clock, Menu, X } from "lucide-react";
+import { MapPin, Phone, Clock, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import {
+  CLINIC_LOCATION_LABEL,
+  CLINIC_HOURS_WEEKDAY,
+  CLINIC_HOURS_SATURDAY,
+  CLINIC_PHONE,
+  CLINIC_PHONE_TEL,
+  CLINIC_NAME,
+} from "@/lib/clinic-constants";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -13,16 +21,16 @@ export function Navbar() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            <span>Downtown Chicago</span>
+            <span>{CLINIC_LOCATION_LABEL}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            <span>Mon-Fri 8am-6pm | Sat 9am-3pm</span>
+            <span>{CLINIC_HOURS_WEEKDAY} | {CLINIC_HOURS_SATURDAY}</span>
           </div>
         </div>
         <div className="flex items-center gap-2 font-medium">
           <Phone className="h-4 w-4" />
-          <span>(312) 555-0190</span>
+          <span>{CLINIC_PHONE}</span>
         </div>
       </div>
       <div className="container mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
@@ -31,7 +39,7 @@ export function Navbar() {
             <span className="text-primary-foreground font-serif font-bold text-xl">M</span>
           </div>
           <span className="font-serif font-semibold text-xl tracking-tight text-foreground">
-            Mitchell Dental Care
+            {CLINIC_NAME}
           </span>
         </Link>
         
@@ -39,7 +47,7 @@ export function Navbar() {
           <Link href="/services" className="text-muted-foreground hover:text-primary transition-colors">Services</Link>
           <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">About Dr. Mitchell</Link>
           <a href="/#testimonials" className="text-muted-foreground hover:text-primary transition-colors">Reviews</a>
-          <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">Insurance</Link>
+          <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact & Insurance</Link>
         </nav>
         
         <div className="hidden md:block">
