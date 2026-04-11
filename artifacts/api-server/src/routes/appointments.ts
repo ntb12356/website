@@ -90,6 +90,11 @@ router.post("/appointments", async (req, res): Promise<void> => {
     return;
   }
 
+  if (!SERVICES.includes(service)) {
+    res.status(400).json({ error: "Invalid service type." });
+    return;
+  }
+
   const existing = await db
     .select()
     .from(appointmentsTable)
@@ -105,20 +110,29 @@ router.post("/appointments", async (req, res): Promise<void> => {
     return;
   }
 
-  const [appointment] = await db
-    .insert(appointmentsTable)
-    .values({
-      patientName,
-      patientEmail,
-      patientPhone,
-      service,
-      date,
-      timeSlot,
-      notes: notes ?? null,
-    })
-    .returning();
+  try {
+    const [appointment] = await db
+      .insert(appointmentsTable)
+      .values({
+        patientName,
+        patientEmail,
+        patientPhone,
+        service,
+        date,
+        timeSlot,
+        notes: notes ?? null,
+      })
+      .returning();
 
-  res.status(201).json(appointment);
+    res.status(201).json(appointment);
+  } catch (err: unknown) {
+    const dbErr = err as { code?: string };
+    if (dbErr.code === "23505") {
+      res.status(409).json({ error: "This time slot is already booked. Please choose another." });
+      return;
+    }
+    throw err;
+  }
 });
 
 router.get("/appointments/:id", async (req, res): Promise<void> => {

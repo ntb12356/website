@@ -6,10 +6,28 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./adminAppointmentsResponse";
+export * from "./adminPatientDetailResponse";
+export * from "./adminPatientsResponse";
+export * from "./adminStats";
 export * from "./appointment";
+export * from "./authUser";
 export * from "./availableSlotsResponse";
 export * from "./createAppointmentBody";
 export * from "./errorResponse";
+export * from "./forgotPasswordBody";
+export * from "./getAdminAppointmentsParams";
 export * from "./getAvailableSlotsParams";
 export * from "./healthStatus";
+export * from "./loginBody";
+export * from "./messageResponse";
+export * from "./patientAppointmentsResponse";
+export * from "./patientProfile";
+export * from "./patientSummary";
+export * from "./registerBody";
+export * from "./rescheduleAppointmentBody";
+export * from "./resetPasswordBody";
 export * from "./timeSlot";
+export * from "./updateAppointmentStatusBody";
+export * from "./updateAppointmentStatusBodyStatus";
+export * from "./updatePatientProfileBody";

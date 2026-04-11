@@ -51,10 +51,119 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface MessageResponse {
+  message: string;
+}
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface RegisterBody {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginBody {
+  email: string;
+  password: string;
+}
+
+export interface ForgotPasswordBody {
+  email: string;
+}
+
+export interface ResetPasswordBody {
+  token: string;
+  newPassword: string;
+}
+
+export interface AdminStats {
+  totalBookings: number;
+  todayBookings: number;
+  pendingBookings: number;
+  totalPatients: number;
+}
+
+export interface AdminAppointmentsResponse {
+  appointments: Appointment[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type UpdateAppointmentStatusBodyStatus =
+  (typeof UpdateAppointmentStatusBodyStatus)[keyof typeof UpdateAppointmentStatusBodyStatus];
+
+export const UpdateAppointmentStatusBodyStatus = {
+  confirmed: "confirmed",
+  cancelled: "cancelled",
+  completed: "completed",
+  pending: "pending",
+} as const;
+
+export interface UpdateAppointmentStatusBody {
+  status: UpdateAppointmentStatusBodyStatus;
+}
+
+export interface RescheduleAppointmentBody {
+  /** Date in YYYY-MM-DD format */
+  date: string;
+  /** Time in HH:MM format (24h) */
+  timeSlot: string;
+}
+
+export interface PatientSummary {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  appointmentCount: number;
+}
+
+export interface AdminPatientsResponse {
+  patients: PatientSummary[];
+  total: number;
+}
+
+export interface PatientProfile {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface AdminPatientDetailResponse {
+  patient: PatientProfile;
+  appointments: Appointment[];
+}
+
+export interface UpdatePatientProfileBody {
+  name: string;
+}
+
+export interface PatientAppointmentsResponse {
+  appointments: Appointment[];
+}
+
 export type GetAvailableSlotsParams = {
   /**
    * Date in YYYY-MM-DD format
    */
   date: string;
   service?: string;
+};
+
+export type GetAdminAppointmentsParams = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  date?: string;
+  service?: string;
+  search?: string;
 };

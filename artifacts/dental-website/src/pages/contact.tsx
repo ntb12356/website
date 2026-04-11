@@ -7,13 +7,42 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, Clock, ShieldCheck, Send } from "lucide-react";
+import {
+  CLINIC_PHONE,
+  CLINIC_PHONE_TEL,
+  CLINIC_EMAIL,
+  CLINIC_ADDRESS_STREET,
+  CLINIC_ADDRESS_CITY,
+} from "@/lib/clinic-constants";
 
 export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError(false);
+    const formData = new FormData(e.currentTarget);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name") as string,
+          email: formData.get("email") as string,
+          subject: formData.get("subject") as string,
+          message: formData.get("message") as string,
+        }),
+      });
+      if (!response.ok) throw new Error("Server error");
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,8 +75,8 @@ export default function Contact() {
                     <div>
                       <h3 className="font-bold text-lg mb-2">Visit Us</h3>
                       <p className="text-muted-foreground leading-relaxed">
-                        1200 N Michigan Ave, Suite 400<br/>
-                        Chicago, IL 60611
+                        {CLINIC_ADDRESS_STREET}<br/>
+                        {CLINIC_ADDRESS_CITY}
                       </p>
                     </div>
                   </div>
@@ -59,7 +88,7 @@ export default function Contact() {
                     <div>
                       <h3 className="font-bold text-lg mb-2">Call Us</h3>
                       <p className="text-muted-foreground leading-relaxed">
-                        (312) 555-0190<br/>
+                        <a href={`tel:${CLINIC_PHONE_TEL}`} className="hover:text-primary transition-colors">{CLINIC_PHONE}</a><br/>
                         <span className="text-sm">For emergencies, press 1.</span>
                       </p>
                     </div>
@@ -72,7 +101,7 @@ export default function Contact() {
                     <div>
                       <h3 className="font-bold text-lg mb-2">Email Us</h3>
                       <p className="text-muted-foreground leading-relaxed">
-                        hello@mitchelldental.com
+                        <a href={`mailto:${CLINIC_EMAIL}`} className="hover:text-primary transition-colors">{CLINIC_EMAIL}</a>
                       </p>
                     </div>
                   </div>
@@ -143,23 +172,28 @@ export default function Contact() {
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="name">Full Name</Label>
-                            <Input id="name" placeholder="John Doe" required />
+                            <Input id="name" name="name" placeholder="John Doe" required />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="email">Email Address</Label>
-                            <Input id="email" type="email" placeholder="john@example.com" required />
+                            <Input id="email" name="email" type="email" placeholder="john@example.com" required />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="subject">Subject</Label>
-                          <Input id="subject" placeholder="How can we help?" required />
+                          <Input id="subject" name="subject" placeholder="How can we help?" required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="message">Message</Label>
-                          <Textarea id="message" placeholder="Type your message here..." className="min-h-[150px]" required />
+                          <Textarea id="message" name="message" placeholder="Type your message here..." className="min-h-[150px]" required />
                         </div>
-                        <Button type="submit" size="lg" className="w-full rounded-full h-14 text-lg">
-                          Send Message
+                        {submitError && (
+                          <p className="text-destructive text-sm font-medium">
+                            Something went wrong. Please try again or call us at {CLINIC_PHONE}.
+                          </p>
+                        )}
+                        <Button type="submit" size="lg" className="w-full rounded-full h-14 text-lg" disabled={isSubmitting}>
+                          {isSubmitting ? "Sending..." : "Send Message"}
                         </Button>
                       </form>
                     </>
