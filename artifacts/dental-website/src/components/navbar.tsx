@@ -66,7 +66,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="rounded-full gap-2">
                   <User className="h-4 w-4" />
-                  {user.name.split(" ")[0]}
+                  {user.name.split(" ")[0] ?? user.name}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
