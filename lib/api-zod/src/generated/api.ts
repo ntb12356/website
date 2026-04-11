@@ -67,3 +67,271 @@ export const GetAppointmentResponse = zod.object({
   status: zod.string(),
   createdAt: zod.string(),
 });
+
+/**
+ * @summary Register a new patient account
+ */
+export const RegisterBody = zod.object({
+  name: zod.string(),
+  email: zod.string(),
+  password: zod.string(),
+});
+
+/**
+ * @summary Log in with email and password
+ */
+export const LoginBody = zod.object({
+  email: zod.string(),
+  password: zod.string(),
+});
+
+export const LoginResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  role: zod.string(),
+});
+
+/**
+ * @summary Log out
+ */
+export const LogoutResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Get current authenticated user
+ */
+export const GetMeResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  role: zod.string(),
+});
+
+/**
+ * @summary Request a password reset link
+ */
+export const ForgotPasswordBody = zod.object({
+  email: zod.string(),
+});
+
+export const ForgotPasswordResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Reset password using a valid token
+ */
+export const ResetPasswordBody = zod.object({
+  token: zod.string(),
+  newPassword: zod.string(),
+});
+
+export const ResetPasswordResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Get dashboard statistics
+ */
+export const GetAdminStatsResponse = zod.object({
+  totalBookings: zod.number(),
+  todayBookings: zod.number(),
+  pendingBookings: zod.number(),
+  totalPatients: zod.number(),
+});
+
+/**
+ * @summary List all appointments with filtering and pagination
+ */
+export const GetAdminAppointmentsQueryParams = zod.object({
+  page: zod.coerce.number().optional(),
+  limit: zod.coerce.number().optional(),
+  status: zod.coerce.string().optional(),
+  date: zod.coerce.string().optional(),
+  service: zod.coerce.string().optional(),
+  search: zod.coerce.string().optional(),
+});
+
+export const GetAdminAppointmentsResponse = zod.object({
+  appointments: zod.array(
+    zod.object({
+      id: zod.number(),
+      patientName: zod.string(),
+      patientEmail: zod.string(),
+      patientPhone: zod.string(),
+      service: zod.string(),
+      date: zod.string(),
+      timeSlot: zod.string(),
+      notes: zod.string().optional(),
+      status: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Update appointment status
+ */
+export const UpdateAdminAppointmentStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateAdminAppointmentStatusBody = zod.object({
+  status: zod.enum(["confirmed", "cancelled", "completed", "pending"]),
+});
+
+export const UpdateAdminAppointmentStatusResponse = zod.object({
+  id: zod.number(),
+  patientName: zod.string(),
+  patientEmail: zod.string(),
+  patientPhone: zod.string(),
+  service: zod.string(),
+  date: zod.string(),
+  timeSlot: zod.string(),
+  notes: zod.string().optional(),
+  status: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Reschedule an appointment
+ */
+export const RescheduleAdminAppointmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RescheduleAdminAppointmentBody = zod.object({
+  date: zod.string().describe("Date in YYYY-MM-DD format"),
+  timeSlot: zod.string().describe("Time in HH:MM format (24h)"),
+});
+
+export const RescheduleAdminAppointmentResponse = zod.object({
+  id: zod.number(),
+  patientName: zod.string(),
+  patientEmail: zod.string(),
+  patientPhone: zod.string(),
+  service: zod.string(),
+  date: zod.string(),
+  timeSlot: zod.string(),
+  notes: zod.string().optional(),
+  status: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary List all patients with appointment counts
+ */
+export const GetAdminPatientsResponse = zod.object({
+  patients: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      email: zod.string(),
+      createdAt: zod.string(),
+      appointmentCount: zod.number(),
+    }),
+  ),
+  total: zod.number(),
+});
+
+/**
+ * @summary Get a patient by ID with their appointments
+ */
+export const GetAdminPatientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetAdminPatientResponse = zod.object({
+  patient: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    email: zod.string(),
+    role: zod.string(),
+    createdAt: zod.string(),
+  }),
+  appointments: zod.array(
+    zod.object({
+      id: zod.number(),
+      patientName: zod.string(),
+      patientEmail: zod.string(),
+      patientPhone: zod.string(),
+      service: zod.string(),
+      date: zod.string(),
+      timeSlot: zod.string(),
+      notes: zod.string().optional(),
+      status: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get current patient profile
+ */
+export const GetPatientProfileResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  role: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update current patient profile name
+ */
+export const UpdatePatientProfileBody = zod.object({
+  name: zod.string(),
+});
+
+export const UpdatePatientProfileResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  role: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Get all appointments for the current patient
+ */
+export const GetPatientAppointmentsResponse = zod.object({
+  appointments: zod.array(
+    zod.object({
+      id: zod.number(),
+      patientName: zod.string(),
+      patientEmail: zod.string(),
+      patientPhone: zod.string(),
+      service: zod.string(),
+      date: zod.string(),
+      timeSlot: zod.string(),
+      notes: zod.string().optional(),
+      status: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Cancel an appointment belonging to the current patient
+ */
+export const CancelPatientAppointmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CancelPatientAppointmentResponse = zod.object({
+  id: zod.number(),
+  patientName: zod.string(),
+  patientEmail: zod.string(),
+  patientPhone: zod.string(),
+  service: zod.string(),
+  date: zod.string(),
+  timeSlot: zod.string(),
+  notes: zod.string().optional(),
+  status: zod.string(),
+  createdAt: zod.string(),
+});
