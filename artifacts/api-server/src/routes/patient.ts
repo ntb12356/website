@@ -2,11 +2,21 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, appointmentsTable, usersTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
+import rateLimit from "express-rate-limit";
 
 const router: IRouter = Router();
 
+const patientLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
 router.get(
   "/patient/me/appointments",
+  patientLimiter,
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const email = req.user!.email;
@@ -23,6 +33,7 @@ router.get(
 
 router.patch(
   "/patient/me/appointments/:id/cancel",
+  patientLimiter,
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(String(req.params.id), 10);
@@ -70,6 +81,7 @@ router.patch(
 
 router.get(
   "/patient/me",
+  patientLimiter,
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const [user] = await db
@@ -94,6 +106,7 @@ router.get(
 
 router.patch(
   "/patient/me",
+  patientLimiter,
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const { name } = req.body as { name?: string };

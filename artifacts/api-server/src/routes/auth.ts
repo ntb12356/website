@@ -5,11 +5,24 @@ import crypto from "crypto";
 import { eq, and, gt, isNull } from "drizzle-orm";
 import { db, usersTable, passwordResetTokensTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
+import rateLimit from "express-rate-limit";
 
 const router: IRouter = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-in-production";
-const secretKey = new TextEncoder().encode(JWT_SECRET);
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET must be set in production");
+}
+const resolvedSecret = JWT_SECRET ?? "dev-secret-change-in-production";
+const secretKey = new TextEncoder().encode(resolvedSecret);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 async function signToken(user: {
@@ -35,7 +48,7 @@ function setAuthCookie(res: Response, token: string): void {
   });
 }
 
-router.post("/auth/register", async (req: Request, res: Response): Promise<void> => {
+router.post("/auth/register", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { name, email, password } = req.body as {
     name?: string;
     email?: string;
@@ -80,7 +93,7 @@ router.post("/auth/register", async (req: Request, res: Response): Promise<void>
   });
 });
 
-router.post("/auth/login", async (req: Request, res: Response): Promise<void> => {
+router.post("/auth/login", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as {
     email?: string;
     password?: string;
@@ -125,13 +138,14 @@ router.post("/auth/logout", (_req: Request, res: Response): void => {
 
 router.get(
   "/auth/me",
+  authLimiter,
   requireAuth,
   (req: Request, res: Response): void => {
     res.json(req.user);
   },
 );
 
-router.post("/auth/forgot-password", async (req: Request, res: Response): Promise<void> => {
+router.post("/auth/forgot-password", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body as { email?: string };
 
   if (!email) {
@@ -161,11 +175,10 @@ router.post("/auth/forgot-password", async (req: Request, res: Response): Promis
 
   res.json({
     message: "If an account with that email exists, a reset link has been sent.",
-    resetToken: token, // dev only — in production this would be emailed
   });
 });
 
-router.post("/auth/reset-password", async (req: Request, res: Response): Promise<void> => {
+router.post("/auth/reset-password", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { token, newPassword } = req.body as {
     token?: string;
     newPassword?: string;

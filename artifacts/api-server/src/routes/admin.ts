@@ -2,11 +2,21 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, ilike, or, sql, desc } from "drizzle-orm";
 import { db, appointmentsTable, usersTable } from "@workspace/db";
 import { requireAdmin } from "../middlewares/auth";
+import rateLimit from "express-rate-limit";
 
 const router: IRouter = Router();
 
+const adminLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
 router.get(
   "/admin/stats",
+  adminLimiter,
   requireAdmin,
   async (_req: Request, res: Response): Promise<void> => {
     const today = new Date().toISOString().slice(0, 10);
@@ -41,6 +51,7 @@ router.get(
 
 router.get(
   "/admin/appointments",
+  adminLimiter,
   requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
@@ -94,6 +105,7 @@ router.get(
 
 router.patch(
   "/admin/appointments/:id",
+  adminLimiter,
   requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(String(req.params.id), 10);
@@ -128,6 +140,7 @@ router.patch(
 
 router.patch(
   "/admin/appointments/:id/reschedule",
+  adminLimiter,
   requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(String(req.params.id), 10);
@@ -162,6 +175,7 @@ router.patch(
 
 router.get(
   "/admin/patients",
+  adminLimiter,
   requireAdmin,
   async (_req: Request, res: Response): Promise<void> => {
     const patients = await db
@@ -193,6 +207,7 @@ router.get(
 
 router.get(
   "/admin/patients/:id",
+  adminLimiter,
   requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(String(req.params.id), 10);

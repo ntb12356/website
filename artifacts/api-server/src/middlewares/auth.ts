@@ -10,8 +10,12 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-in-production";
-const secretKey = new TextEncoder().encode(JWT_SECRET);
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET must be set in production");
+}
+const resolvedSecret = JWT_SECRET ?? "dev-secret-change-in-production";
+const secretKey = new TextEncoder().encode(resolvedSecret);
 
 export async function requireAuth(
   req: Request,
